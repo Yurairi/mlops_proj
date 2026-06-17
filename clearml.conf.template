@@ -1,0 +1,9 @@
+api {
+    web_server: http://localhost:9091
+    api_server: http://localhost:9092
+    files_server: http://localhost:9093
+    credentials {
+        "access_key" = "YOUR_ACCESS_KEY"
+        "secret_key" = "YOUR_SECRET_KEY"
+    }
+}

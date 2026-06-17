@@ -1,0 +1,12 @@
+{
+  "dataset_name": "IMDb Sentiment",
+  "num_classes": 2,
+  "class_names": [
+    "negative",
+    "positive"
+  ],
+  "train_size": 4000,
+  "val_size": 1000,
+  "test_size": 1000,
+  "description": "IMDb movie reviews for sentiment classification"
+}
