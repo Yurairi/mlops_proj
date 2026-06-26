@@ -1,0 +1,173 @@
+/opt/homebrew/lib/python3.11/site-packages/clearml_agent/external/requirements_parser/requirement.py:9: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import Requirement as Req  # noqa
+INFO: clearml-agent-bootstrap was not detected.
+      We recommend installing it to significantly reduce agent job start-up time.
+      To install, run: clearml-agent install-bootstrap
+      See: https://github.com/clearml/clearml-agent-bootstrap
+Current configuration (clearml_agent v3.0.1, location: /Users/yura/clearml.conf):
+----------------------
+agent.worker_id = 
+agent.worker_name = MacBook-Pro-Yura.local
+agent.force_git_ssh_protocol = false
+agent.python_binary = 
+agent.package_manager.type = pip
+agent.package_manager.pip_version.0 = <20.2 ; python_version < '3.10'
+agent.package_manager.pip_version.1 = <22.3 ; python_version >\= '3.10' and python_version <\= '3.11'
+agent.package_manager.pip_version.2 = >\=23,<26 ; python_version >\= '3.12'
+agent.package_manager.uv_sync_locked_if_lock_file = true
+agent.package_manager.system_site_packages = false
+agent.package_manager.force_upgrade = false
+agent.package_manager.pip_legacy_resolver.0 = >\=20.3,<24.3
+agent.package_manager.conda_channels.0 = pytorch
+agent.package_manager.conda_channels.1 = conda-forge
+agent.package_manager.conda_channels.2 = nvidia
+agent.package_manager.conda_channels.3 = defaults
+agent.package_manager.priority_optional_packages.0 = pygobject
+agent.package_manager.torch_nightly = false
+agent.package_manager.poetry_files_from_repo_working_dir = false
+agent.package_manager.uv_files_from_repo_working_dir = false
+agent.venvs_dir = /Users/yura/.clearml/venvs-builds.1
+agent.venvs_cache.max_entries = 10
+agent.venvs_cache.free_space_threshold_gb = 2.0
+agent.venvs_cache.path = ~/.clearml/venvs-cache
+agent.vcs_cache.enabled = true
+agent.vcs_cache.path = /Users/yura/.clearml/vcs-cache
+agent.pip_download_cache.enabled = true
+agent.pip_download_cache.path = /Users/yura/.clearml/pip-download-cache
+agent.translate_ssh = true
+agent.translate_ssl_replacement_scheme = https
+agent.reload_config = false
+agent.docker_pip_cache = /Users/yura/.clearml/pip-cache
+agent.docker_apt_cache = /Users/yura/.clearml/apt-cache.1
+agent.bootstrap.use_bootstrap = true
+agent.bootstrap.check_for_latest = false
+agent.bootstrap.check_for_latest_timeout = 5
+agent.bootstrap.host_bootstrap_dir = ~/.clearml.bootstrap
+agent.bootstrap.host_bootstrap_cache_dir = ~/.clearml.bootstrap.cache
+agent.bootstrap.skip_git_installation = true
+agent.bootstrap.always_use_static_git = false
+agent.bootstrap.always_install_ca_cert = true
+agent.docker_force_pull = false
+agent.default_docker.image = nvidia/cuda:12.6.3-cudnn-runtime-ubuntu20.04
+agent.default_docker.update_back_task = true
+agent.default_docker.match_rules.0.image = python:3.6-bullseye
+agent.default_docker.match_rules.0.arguments = --ipc\=host
+agent.default_docker.match_rules.0.update_back_task = true
+agent.default_docker.match_rules.0.match.script.binary = python3.6$
+agent.default_docker.match_rules.1.image = python:3.7-bullseye
+agent.default_docker.match_rules.1.arguments = --ipc\=host
+agent.default_docker.match_rules.1.update_back_task = true
+agent.default_docker.match_rules.1.match.script.binary = python3.7$
+agent.default_docker.match_rules.2.image = python:3.8-bullseye
+agent.default_docker.match_rules.2.arguments = --ipc\=host
+agent.default_docker.match_rules.2.match.script.binary = python3.8$
+agent.default_docker.match_rules.3.image = python:3.9-bullseye
+agent.default_docker.match_rules.3.arguments = --ipc\=host
+agent.default_docker.match_rules.3.match.script.binary = python3.9$
+agent.default_docker.match_rules.4.image = python:3.10-bullseye
+agent.default_docker.match_rules.4.arguments = --ipc\=host
+agent.default_docker.match_rules.4.match.script.binary = python3.10$
+agent.default_docker.match_rules.5.image = python:3.11-bullseye
+agent.default_docker.match_rules.5.arguments = --ipc\=host
+agent.default_docker.match_rules.5.match.script.binary = python3.11$
+agent.default_docker.match_rules.6.image = python:3.12-bullseye
+agent.default_docker.match_rules.6.arguments = --ipc\=host
+agent.default_docker.match_rules.6.match.script.binary = python3.12$
+agent.default_docker.match_rules.7.image = python:3.13-bullseye
+agent.default_docker.match_rules.7.arguments = --ipc\=host
+agent.default_docker.match_rules.7.match.script.binary = python3.13$
+agent.enable_task_env = false
+agent.sanitize_config_printout = ****
+agent.hide_docker_command_env_vars.enabled = true
+agent.hide_docker_command_env_vars.parse_embedded_urls = true
+agent.abort_callback_max_timeout = 1800
+agent.docker_internal_mounts.bootstrap_folder = /.clearml.bootstrap
+agent.docker_internal_mounts.bootstrap_cache = /.clearml.bootstrap.cache
+agent.docker_internal_mounts.sdk_cache = /clearml_agent_cache
+agent.docker_internal_mounts.apt_cache = /var/cache/apt/archives
+agent.docker_internal_mounts.ssh_folder = ~/.ssh
+agent.docker_internal_mounts.ssh_ro_folder = /.ssh
+agent.docker_internal_mounts.pip_cache = /root/.cache/pip
+agent.docker_internal_mounts.poetry_cache = /root/.cache/pypoetry
+agent.docker_internal_mounts.vcs_cache = /root/.clearml/vcs-cache
+agent.docker_internal_mounts.venvs_cache = /root/.clearml/venvs-cache
+agent.docker_internal_mounts.venv_build = ~/.clearml/venvs-builds
+agent.docker_internal_mounts.pip_download = /root/.clearml/pip-download-cache
+agent.apply_environment = true
+agent.apply_files = true
+agent.custom_build_script = 
+agent.disable_task_docker_override = false
+agent.default_python = 3.11
+agent.cuda_version = 0
+agent.cudnn_version = 0
+api.version = 1.5
+api.verify_certificate = true
+api.default_version = 1.5
+api.http.max_req_size = 15728640
+api.http.retries.total = 240
+api.http.retries.connect = 240
+api.http.retries.read = 240
+api.http.retries.redirect = 240
+api.http.retries.status = 240
+api.http.retries.backoff_factor = 1.0
+api.http.retries.backoff_max = 120.0
+api.http.wait_on_maintenance_forever = true
+api.http.pool_maxsize = 512
+api.http.pool_connections = 512
+api.auth.token_expiration_threshold_sec = ****
+api.api_server = http://localhost:9092
+api.web_server = http://localhost:9091
+api.files_server = http://localhost:9093
+api.credentials.access_key = Y3UR48LJNL08MZKZGPBJ55PW693SMY
+api.credentials.secret_key = ****
+api.host = http://localhost:9092
+sdk.storage.cache.default_base_dir = ~/.clearml/cache
+sdk.storage.cache.size.min_free_bytes = 10GB
+sdk.storage.direct_access.0.url = file://*
+sdk.metrics.file_history_size = 100
+sdk.metrics.matplotlib_untitled_history_size = 100
+sdk.metrics.images.format = JPEG
+sdk.metrics.images.quality = 87
+sdk.metrics.images.subsampling = 0
+sdk.metrics.tensorboard_single_series_per_graph = false
+sdk.network.metrics.file_upload_threads = 4
+sdk.network.metrics.file_upload_starvation_warning_sec = 120
+sdk.network.iteration.max_retries_on_server_error = 5
+sdk.network.iteration.retry_backoff_factor_sec = 10
+sdk.network.file_upload_retries = 3
+sdk.aws.s3.key = 
+sdk.aws.s3.secret = ****
+sdk.aws.s3.region = 
+sdk.aws.s3.use_credentials_chain = false
+sdk.aws.boto3.pool_connections = 512
+sdk.aws.boto3.max_multipart_concurrency = 16
+sdk.aws.boto3.multipart_threshold = 8388608
+sdk.aws.boto3.multipart_chunksize = 8388608
+sdk.log.null_log_propagate = false
+sdk.log.task_log_buffer_capacity = 66
+sdk.log.disable_urllib3_info = true
+sdk.development.task_reuse_time_window_in_hours = 72.0
+sdk.development.vcs_repo_detect_async = true
+sdk.development.store_uncommitted_code_diff = true
+sdk.development.support_stopping = true
+sdk.development.default_output_uri = 
+sdk.development.force_analyze_entire_repo = false
+sdk.development.suppress_update_message = false
+sdk.development.detect_with_pip_freeze = false
+sdk.development.worker.report_period_sec = 2
+sdk.development.worker.ping_period_sec = 30
+sdk.development.worker.log_stdout = true
+sdk.development.worker.report_global_mem_used = false
+sdk.development.worker.report_event_flush_threshold = 100
+sdk.development.worker.console_cr_flush_period = 10
+sdk.apply_environment = false
+sdk.apply_files = false
+
+Worker "MacBook-Pro-Yura.local:1" - Listening to queues:
++----------------------------------+----------+-------+
+| id                               | name     | tags  |
++----------------------------------+----------+-------+
+| 6a08d1801eb94e16ab2d611e46ed0dbc | students |       |
++----------------------------------+----------+-------+
+
+Running CLEARML-AGENT daemon in background mode, writing stdout/stderr to /var/folders/73/st2f9z3560v4by4x18rwql_r0000gn/T/.clearml_agent_daemon_outiltf8y7n.txt

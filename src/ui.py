@@ -1,8 +1,12 @@
+import os
 import time
-import requests
-import gradio as gr
 
-API_URL = "http://127.0.0.1:8020/predict"
+import gradio as gr
+import requests
+
+ENDPOINT_URL = os.getenv(
+    "CLEARML_SERVING_URL", "http://127.0.0.1:8020/serve/class"
+)
 
 LABEL_MAP = {"1": "очень позитивно, круто", "0": "очень негативно, вообще не круто"}
 
@@ -13,7 +17,12 @@ def predict(text):
 
     try:
         start = time.perf_counter()
-        r = requests.post(API_URL, json={"text": text}, timeout=10)
+        r = requests.post(
+            ENDPOINT_URL,
+            json={"text": text},
+            headers={"Content-Type": "application/json"},
+            timeout=30,
+        )
         client_latency_ms = round((time.perf_counter() - start) * 1000, 2)
 
         r.raise_for_status()
@@ -24,13 +33,7 @@ def predict(text):
             raw_label, LABEL_MAP.get(str(raw_label), str(raw_label))
         )
 
-        server_latency = data.get("latency_ms")
-        if server_latency is not None:
-            latency_text = f"{client_latency_ms} ms (server: {server_latency} ms)"
-        else:
-            latency_text = f"{client_latency_ms} ms"
-
-        return label_text, latency_text
+        return label_text, f"{client_latency_ms} ms"
 
     except requests.exceptions.RequestException as e:
         return "Ошибка", f"Endpoint недоступен: {e}"

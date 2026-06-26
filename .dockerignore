@@ -1,0 +1,61 @@
+.venv/
+venv/
+env/
+ENV/
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Packaging
+build/
+dist/
+*.egg-info/
+pip-wheel-metadata/
+
+# Test / coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Data, models, outputs
+data/
+dataset_metadata.json
+train.csv
+val.csv
+test.csv
+models/
+outputs/
+artifacts/
+*.h5
+*.pt
+*.ckpt
+
+# Logs
+*.log
+
+# Local config / secrets
+clearml.conf
+.env
+.env.*
+secrets/
+*.pem
+*.key
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Git
+.git
+.gitignore
+
+# IDEs
+.vscode/
+.idea/
+
+# Databases
+*.sqlite3
+*.db

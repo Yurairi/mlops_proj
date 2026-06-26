@@ -1,4 +1,3 @@
-
 # Курсовой проект MLOps
 
 ## Данилаева Софья
@@ -25,10 +24,9 @@
 ├── src/                             # Исходный код
 │   ├── prepare_data.py              # Скачивание и подготовка датасета
 │   ├── create_clearml_dataset.py    # Загрузка датасета в ClearML
-│   ├── train.py                     # Скрипт обучения модели
-│   ├── serving.py                   # FastAPI inference endpoint
+│   ├── train.py                     # Скрипт обучения
+│   ├── preprocess_serving.py        # Pre/postprocess для ClearML Serving
 │   └── ui.py                        # Gradio интерфейс
-├── data/                            # Данные
 ├── requirements.txt                 # Python-зависимости
 └── clearml.conf.template            # Шаблон конфига ClearML
 ```
@@ -142,7 +140,7 @@ python src/create_clearml_dataset.py
 Этот ID используется при запуске обучения:
 
 ```python
-dataset_id = "fc13ab60ae05404da075c528ed8eb79d"
+dataset_id = "YOUR_DATASET_ID"
 ```
 
 ![alt text](images/image3.png)
@@ -152,14 +150,22 @@ dataset_id = "fc13ab60ae05404da075c528ed8eb79d"
 Скрипт `src/train.py`:
 
 - создаёт ClearML Task в проекте `Text Classification`
-- отправляет задачу в очередь `students`
 - получает датасет из ClearML по `dataset_id`
-- обучает модель `LogisticRegression`
+- обучает модель `LogisticRegression` в sklearn Pipeline
 - логирует гиперпараметры
 - логирует метрики `accuracy` и `f1`
-- сохраняет модель как artifact
+- логирует confusion matrix
+- сохраняет модель как artifact для Model Registry
 
-Запуск экспериментов через `clearml-task` (обучение выполняется агентом, а не локально):
+Обучение **не запускается локально** — задачи ставятся в очередь `students` и выполняются ClearML Agent.
+
+Перед запуском убедитесь, что агент активен:
+
+```bash
+nohup clearml-agent daemon --queue students > agent.log 2>&1 &
+```
+
+Запуск экспериментов через `clearml-task`:
 
 **Эксперимент 1:**
 
@@ -169,7 +175,7 @@ clearml-task --project "Text Classification" \
   --script src/train.py \
   --queue students \
   --requirements requirements.txt \
-  --args dataset_id=fc13ab60ae05404da075c528ed8eb79d max_features=1000 C=1.0
+  --args dataset_id=YOUR_DATASET_ID max_features=1000 C=1.0 task_name=Exp1
 ```
 
 **Эксперимент 2:**
@@ -180,8 +186,10 @@ clearml-task --project "Text Classification" \
   --script src/train.py \
   --queue students \
   --requirements requirements.txt \
-  --args dataset_id=fc13ab60ae05404da075c528ed8eb79d max_features=5000 C=0.1
+  --args dataset_id=YOUR_DATASET_ID max_features=5000 C=0.1 task_name=Exp2
 ```
+
+> Замените `YOUR_DATASET_ID` на ID из этапа 1.
 
 Параметры экспериментов:
 
@@ -190,12 +198,11 @@ clearml-task --project "Text Classification" \
 | `C`            | 1.0          | 0.1          |
 | `max_features` | 1000         | 5000         |
 
-
-| Experiment 1                   | Experiment 2                   |
-| ------------------------------ | ------------------------------ |
-| ![alt text](images/image4.png)  | ![alt text](images/image8.png)  |
-| ![alt text](images/image5.png)  | ![alt text](images/image9.png)  |
-| ![alt text](images/image6.png)  | ![alt text](images/image10.png) |
+| Experiment 1                 | Experiment 2                  |
+| ---------------------------- | ----------------------------- |
+| ![alt text](images/image4.png) | ![alt text](images/image8.png)  |
+| ![alt text](images/image5.png) | ![alt text](images/image9.png)  |
+| ![alt text](images/image6.png) | ![alt text](images/image10.png) |
 | ![alt text](images/image7.png) | ![alt text](images/image11.png) |
 
 ## Этап 3. Model Registry
@@ -207,72 +214,76 @@ clearml-task --project "Text Classification" \
 ```bash
 python -c "
 from clearml import Model
-model = Model(model_id='258f45e2527a4eb38eb4b329af147819')
+model = Model(model_id='YOUR_MODEL_ID')
 model.publish()
 print('Model published')
 "
 ```
 
+> Замените `YOUR_MODEL_ID` на ID модели из лучшего эксперимента (в UI эксперимента → Artifacts → model).
+
 ![alt text](images/image12.png)
 
-## Этап 4. Inference Endpoint
+## Этап 4. Inference Endpoint (ClearML Serving)
 
-В проекте inference endpoint реализован через FastAPI.
-
-Скрипт `src/serving.py`:
-
-- загружает модель из ClearML по `model_id`
-- поднимает HTTP endpoint
-- принимает текст
-- возвращает predicted label, confidence и latency
-
-Запуск endpoint:
+### 1. Создать Serving Controller
 
 ```bash
-uvicorn serving:app --host 127.0.0.1 --port 8020
+clearml-serving create --name "Text Service"
 ```
 
-> Запускать из src проекта с активированным venv, либо указать модуль: `uvicorn src.serving:app --host 127.0.0.1 --port 8020`
+Сохраните выведенный `id` (Serving Task ID).
 
-Проверка через Swagger UI: http://127.0.0.1:8020/docs
+### 2. Добавить модель из Registry
+
+```bash
+clearml-serving --id YOUR_SERVING_ID model add \
+  --engine sklearn \
+  --endpoint "class" \
+  --project "Text Classification" \
+  --name "Exp1" \
+  --preprocess "src/preprocess_serving.py"
+```
+
+### 3. Запустить inference engine
+
+```bash
+CLEARML_SERVING_TASK_ID=YOUR_SERVING_ID \
+  uvicorn clearml_serving.serving.main:app \
+  --host 0.0.0.0 --port 8020
+```
+
+Подождите 10–20 секунд, пока engine подгрузит модель.
+
+### 4. Проверка endpoint
 
 Пример запроса для positive class:
 
-```json
-{
-  "text": "film was amazing"
-}
+```bash
+curl -X POST "http://127.0.0.1:8020/serve/class" \
+  -H "Content-Type: application/json" \
+  -d '{"text": "film was amazing"}'
 ```
 
 Ожидаемый ответ:
 
 ```json
-{
-  "label": "1",
-  "confidence": 0.596,
-  "latency_ms": 1.16
-}
+{"label": "1"}
 ```
 
 Пример запроса для negative class:
 
-```json
-{
-  "text": "film was soo bad"
-}
+```bash
+curl -X POST "http://127.0.0.1:8020/serve/class" \
+  -H "Content-Type: application/json" \
+  -d '{"text": "film was soo bad"}'
 ```
 
 Ожидаемый ответ:
 
 ```json
-{
-  "label": "0",
-  "confidence": 0.746,
-  "latency_ms": 1.05
-}
+{"label": "0"}
 ```
-
-![alt text](images/image13.png)
 
 ## Этап 5. Gradio UI
 
@@ -281,15 +292,17 @@ UI реализован в `src/ui.py`.
 Он:
 
 - содержит поле ввода текста
-- содержит кнопку отправки запроса
-- отправляет HTTP-запрос на endpoint
-- возвращает тип
+- содержит кнопку Predict
+- отправляет HTTP-запрос на ClearML Serving endpoint
+- отображает label и latency
 - показывает ошибку, если endpoint недоступен
 
-Перед запуском UI должен быть запущен inference endpoint:
+Перед запуском UI должен быть запущен ClearML Serving (этап 4):
 
 ```bash
-uvicorn serving:app --host 127.0.0.1 --port 8020
+CLEARML_SERVING_TASK_ID=YOUR_SERVING_ID \
+  uvicorn clearml_serving.serving.main:app \
+  --host 0.0.0.0 --port 8020
 ```
 
 Запуск Gradio:
@@ -302,6 +315,6 @@ UI будет доступен по адресу, который выведет 
 
 ![alt text](images/image14.png)
 
-| negative                       | positive                       |
-| ------------------------------ | ------------------------------ |
+| negative                      | positive                      |
+| ----------------------------- | ----------------------------- |
 | ![alt text](images/image15.png) | ![alt text](images/image16.png) |

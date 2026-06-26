@@ -3,12 +3,11 @@ from pathlib import Path
 
 import joblib
 import pandas as pd
-
-from clearml import Dataset, OutputModel, Task
-from clearml import Logger
+from clearml import Dataset, Logger, OutputModel, Task
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import accuracy_score, f1_score, confusion_matrix
+from sklearn.metrics import accuracy_score, confusion_matrix, f1_score
+from sklearn.pipeline import Pipeline
 
 
 def load_split(base_path: str, filename: str) -> pd.DataFrame:
@@ -37,15 +36,20 @@ def main():
     parser.add_argument("--task_name", type=str, default="experiment-1")
     args = parser.parse_args()
 
+    Task.add_requirements("numpy", "2.4.6")
+    Task.add_requirements("scikit-learn", "1.9.0")
+    Task.add_requirements("pandas", "3.0.3")
+    Task.add_requirements("joblib", "1.3.2")
+
     task = Task.init(
-        project_name="sentiment-lab",
+        project_name="Text Classification",
         task_name=args.task_name,
         output_uri=True,
+        auto_connect_arg_parser=parser,
     )
-    task.execute_remotely(queue_name="students")
     task.connect(vars(args))
 
-    logger = task.get_logger()
+    logger: Logger = task.get_logger()
     output_model = OutputModel(task=task, framework="scikit-learn")
 
     dataset = Dataset.get(dataset_id=args.dataset_id)
@@ -62,16 +66,23 @@ def main():
     X_test = test_df["text"]
     y_test = test_df["label"]
 
-    vec = TfidfVectorizer(max_features=args.max_features)
-    X_train_vec = vec.fit_transform(X_train)
-    X_val_vec = vec.transform(X_val)
-    X_test_vec = vec.transform(X_test)
+    pipe = Pipeline(
+        [
+            ("tfidf", TfidfVectorizer(max_features=args.max_features)),
+            (
+                "clf",
+                LogisticRegression(
+                    C=args.C,
+                    max_iter=args.max_iter,
+                    random_state=args.random_state,
+                ),
+            ),
+        ]
+    )
+    pipe.fit(X_train, y_train)
 
-    model = LogisticRegression(C=args.C, max_iter=args.max_iter)
-    model.fit(X_train_vec, y_train)
-
-    val_pred = model.predict(X_val_vec)
-    test_pred = model.predict(X_test_vec)
+    val_pred = pipe.predict(X_val)
+    test_pred = pipe.predict(X_test)
 
     pos_label = infer_pos_label(y_train)
 
@@ -80,10 +91,10 @@ def main():
     test_acc = accuracy_score(y_test, test_pred)
     test_f1 = f1_score(y_test, test_pred, pos_label=pos_label)
 
+    logger.report_scalar("metrics", "accuracy", value=test_acc, iteration=0)
+    logger.report_scalar("metrics", "f1", value=test_f1, iteration=0)
     logger.report_scalar("metrics", "val_accuracy", value=val_acc, iteration=0)
     logger.report_scalar("metrics", "val_f1", value=val_f1, iteration=0)
-    logger.report_scalar("metrics", "test_accuracy", value=test_acc, iteration=0)
-    logger.report_scalar("metrics", "test_f1", value=test_f1, iteration=0)
 
     labels = sorted(list(set(y_train) | set(y_val) | set(y_test)))
     cm = confusion_matrix(y_test, test_pred, labels=labels)
@@ -99,11 +110,8 @@ def main():
     )
 
     model_path = "model.pkl"
-    joblib.dump({"vectorizer": vec, "model": model}, model_path)
+    joblib.dump(pipe, model_path, compress=True)
     output_model.update_weights(weights_filename=model_path)
-
-    if isinstance(pos_label, str):
-        output_model.update_labels({str(lbl): i for i, lbl in enumerate(labels)})
 
     print(f"val_accuracy={val_acc:.4f}, val_f1={val_f1:.4f}")
     print(f"test_accuracy={test_acc:.4f}, test_f1={test_f1:.4f}")
